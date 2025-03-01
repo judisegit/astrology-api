@@ -39,10 +39,16 @@ const aspect = (first, second, orbs) => {
     orbs = { ...DEFAULT_ORBS }
   }
 
+  if (!orbs[first.type] || !orbs[second.type]) {
+    console.warn(`未知的行星類型: ${first.type} 或 ${second.type}`);
+    return undefined;
+  }
+
   const aspectsFirst = calculateAspect(first, second, orbs[first.type])
   const aspectsSecond = calculateAspect(first, second, orbs[second.type])
 
-  if (aspectsFirst.length === 0 && aspectsSecond.length === 0) {
+  const combinedAspects = [...new Set([...aspectsFirst, ...aspectsSecond])]
+  if (combinedAspects.length === 0) {
     return undefined
   }
 
@@ -50,10 +56,11 @@ const aspect = (first, second, orbs) => {
     Math.abs(normalizeDegrees(first.position.longitude) - normalizeDegrees(second.position.longitude)),
     360 - Math.abs(normalizeDegrees(first.position.longitude) - normalizeDegrees(second.position.longitude))
   )
-  const closestAspect = aspectsFirst.reduce((closest, a) => {
+  
+  const closestAspect = combinedAspects.reduce((closest, a) => {
     const angleDiff = Math.abs(parseFloat(a) - diff)
     return angleDiff < Math.abs(parseFloat(closest) - diff) ? a : closest
-  }, aspectsFirst[0])
+  }, combinedAspects[0])
 
   const direction = aspectsFirst.includes(closestAspect) && aspectsSecond.includes(closestAspect) ? 'bidirectional' : 'unidirectional'
 
