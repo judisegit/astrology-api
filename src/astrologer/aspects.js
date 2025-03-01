@@ -105,19 +105,19 @@ const aspect = (first, second, orbs) => {
 
 const aspects = (planets) => {
   return Object.keys(planets).reduce((acc, planetKey) => {
-    acc[planetKey] = []
+    acc[planetKey] = [];
 
-    Object.values(planets).filter((p) => p.name !== planetKey).forEach((p) => {
-      if (!acc[p.name]) {
-        const aspectsFounds = aspect(planets[planetKey], p)
+    Object.values(planets).forEach((p) => {
+      if (p.name !== planetKey) { // 只需避免與自己比較
+        const aspectsFounds = aspect(planets[planetKey], p);
         if (aspectsFounds) {
-          acc[planetKey].push(aspectsFounds)
+          acc[planetKey].push(aspectsFounds);
         }
       }
-    })
+    });
 
-    return acc
-  }, {})
+    return acc;
+  }, {});
 }
 
 module.exports = {
