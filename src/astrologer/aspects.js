@@ -10,7 +10,6 @@ const ASPECTS = {
   180: 'opposition'
 }
 
-// HUBER ORBS... but mars and jupiter modified...
 const DEFAULT_ORBS = {
   luminary: {
     0: 10,
@@ -60,7 +59,7 @@ const DEFAULT_ORBS = {
 }
 
 const calculateAspect = (first, second, orbs) => {
-  return Object.keys({ ...ASPECTS }).filter(
+  return Object.keys(ASPECTS).filter(
     (a) => {
       const totalOrbsForAspect = orbs[a]
       const from = parseFloat(a) - (totalOrbsForAspect / 2)
@@ -87,18 +86,25 @@ const aspect = (first, second, orbs) => {
     return undefined
   }
 
-  const direction = aspectsFirst.length === 1 && aspectsSecond.length === 1 ? 'bidirectional' : 'unidirectional'
+  // 如果有多個相位，取最接近的角度
+  const diff = Math.abs(normalizeDegrees(first.position.longitude) - normalizeDegrees(second.position.longitude))
+  const closestAspect = aspectsFirst.reduce((closest, a) => {
+    const angleDiff = Math.abs(parseFloat(a) - diff)
+    return angleDiff < Math.abs(parseFloat(closest) - diff) ? a : closest
+  }, aspectsFirst[0])
+
+  const direction = aspectsFirst.includes(closestAspect) && aspectsSecond.includes(closestAspect) ? 'bidirectional' : 'unidirectional'
 
   return {
-    name: ASPECTS[aspectsFirst[0]],
+    name: ASPECTS[closestAspect],
     direction,
     first: {
       name: first.name,
-      exist: aspectsFirst.length === 1
+      exist: aspectsFirst.includes(closestAspect)
     },
     second: {
       name: second.name,
-      exist: aspectsSecond.length === 1
+      exist: aspectsSecond.includes(closestAspect)
     }
   }
 }
@@ -108,7 +114,7 @@ const aspects = (planets) => {
     acc[planetKey] = [];
 
     Object.values(planets).forEach((p) => {
-      if (p.name !== planetKey) { // 只需避免與自己比較
+      if (p.name !== planetKey) {
         const aspectsFounds = aspect(planets[planetKey], p);
         if (aspectsFounds) {
           acc[planetKey].push(aspectsFounds);
