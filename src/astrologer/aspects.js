@@ -11,51 +11,11 @@ const ASPECTS = {
 }
 
 const DEFAULT_ORBS = {
-  luminary: {
-    0: 10,
-    30: 3,
-    60: 5,
-    90: 6,
-    120: 8,
-    150: 5,
-    180: 10
-  },
-  personal: {
-    0: 7,
-    30: 2,
-    60: 4,
-    90: 5,
-    120: 6,
-    150: 2,
-    180: 7
-  },
-  social: {
-    0: 6,
-    30: 1.5,
-    60: 3,
-    90: 4,
-    120: 5,
-    150: 3,
-    180: 6
-  },
-  transpersonal: {
-    0: 5,
-    30: 1,
-    60: 2,
-    90: 3,
-    120: 4,
-    150: 2,
-    180: 5
-  },
-  other: {
-    0: 5,
-    30: 1,
-    60: 2,
-    90: 3,
-    120: 4,
-    150: 2,
-    180: 5
-  }
+  luminary: { 0: 10, 30: 3, 60: 5, 90: 6, 120: 8, 150: 5, 180: 10 },
+  personal: { 0: 7, 30: 2, 60: 4, 90: 5, 120: 6, 150: 2, 180: 7 },
+  social: { 0: 6, 30: 1.5, 60: 3, 90: 4, 120: 5, 150: 3, 180: 6 },
+  transpersonal: { 0: 5, 30: 1, 60: 2, 90: 3, 120: 4, 150: 2, 180: 5 },
+  other: { 0: 5, 30: 1, 60: 2, 90: 3, 120: 4, 150: 2, 180: 5 }
 }
 
 const calculateAspect = (first, second, orbs) => {
@@ -68,7 +28,7 @@ const calculateAspect = (first, second, orbs) => {
       const firstLongitude = normalizeDegrees(first.position.longitude)
       const secondLongitude = normalizeDegrees(second.position.longitude)
 
-      const diff = Math.abs(firstLongitude - secondLongitude)
+      const diff = Math.min(Math.abs(firstLongitude - secondLongitude), 360 - Math.abs(firstLongitude - secondLongitude)); // 考慮最短角度
       return diff >= from && diff <= to
     }
   )
@@ -86,8 +46,10 @@ const aspect = (first, second, orbs) => {
     return undefined
   }
 
-  // 如果有多個相位，取最接近的角度
-  const diff = Math.abs(normalizeDegrees(first.position.longitude) - normalizeDegrees(second.position.longitude))
+  const diff = Math.min(
+    Math.abs(normalizeDegrees(first.position.longitude) - normalizeDegrees(second.position.longitude)),
+    360 - Math.abs(normalizeDegrees(first.position.longitude) - normalizeDegrees(second.position.longitude))
+  )
   const closestAspect = aspectsFirst.reduce((closest, a) => {
     const angleDiff = Math.abs(parseFloat(a) - diff)
     return angleDiff < Math.abs(parseFloat(closest) - diff) ? a : closest
@@ -98,21 +60,14 @@ const aspect = (first, second, orbs) => {
   return {
     name: ASPECTS[closestAspect],
     direction,
-    first: {
-      name: first.name,
-      exist: aspectsFirst.includes(closestAspect)
-    },
-    second: {
-      name: second.name,
-      exist: aspectsSecond.includes(closestAspect)
-    }
+    first: { name: first.name, exist: aspectsFirst.includes(closestAspect) },
+    second: { name: second.name, exist: aspectsSecond.includes(closestAspect) }
   }
 }
 
 const aspects = (planets) => {
   return Object.keys(planets).reduce((acc, planetKey) => {
     acc[planetKey] = [];
-
     Object.values(planets).forEach((p) => {
       if (p.name !== planetKey) {
         const aspectsFounds = aspect(planets[planetKey], p);
@@ -121,7 +76,6 @@ const aspects = (planets) => {
         }
       }
     });
-
     return acc;
   }, {});
 }
