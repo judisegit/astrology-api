@@ -138,6 +138,12 @@ const aspects = (planets, axes) => {
     });
   }
   
+  Object.keys(result).forEach(planetKey => {
+    if (result[planetKey].length === 0) {
+      delete result[planetKey];
+    }
+  });
+  
   return result;
 }
 
