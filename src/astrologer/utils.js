@@ -39,14 +39,8 @@ const degreesToDms = (value) => {
 const zodiacSign = (degrees) => (Math.floor(degrees / 30) % 12) + 1
 
 const normalizeDegrees = (degrees) => {
-  if (degrees < -180) {
-    return degrees + 360
-  }
-  if (degrees > 180) {
-    return degrees - 360
-  }
-
-  return degrees
+  degrees = degrees % 360; // 取模，將角度限制在 0-360 或 -360-0
+  return degrees < 0 ? degrees + 360 : degrees; // 確保返回 0°-360°
 }
 
 module.exports = {
