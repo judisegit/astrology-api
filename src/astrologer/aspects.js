@@ -21,9 +21,10 @@ const DEFAULT_ORBS = {
 
 const calculateAspect = (first, second, orbs) => {
   if (first.type === 'axis' || second.type === 'axis') {
-    const aspectKeys = Object.keys(orbs);
-    return aspectKeys.filter(
+    return Object.keys(orbs).filter(
       (a) => {
+        if (a !== "0") return false;
+        
         const totalOrbsForAspect = orbs[a]
         const from = parseFloat(a) - totalOrbsForAspect
         const to = parseFloat(a) + totalOrbsForAspect
