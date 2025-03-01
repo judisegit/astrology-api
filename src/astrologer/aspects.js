@@ -28,7 +28,7 @@ const calculateAspect = (first, second, orbs) => {
       const firstLongitude = normalizeDegrees(first.position.longitude)
       const secondLongitude = normalizeDegrees(second.position.longitude)
 
-      const diff = Math.min(Math.abs(firstLongitude - secondLongitude), 360 - Math.abs(firstLongitude - secondLongitude)); // 考慮最短角度
+      const diff = Math.min(Math.abs(firstLongitude - secondLongitude), 360 - Math.abs(firstLongitude - secondLongitude));
       return diff >= from && diff <= to
     }
   )
