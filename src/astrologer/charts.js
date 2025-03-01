@@ -4,7 +4,6 @@ const { planets } = require('./astros')
 
 const natalChart = (date, latitude, longitude, houseSystem = 'P') => {
   const astrosList = planets(date)
-  const aspectsList = aspects(astrosList)
   const housesList = houses(
     date,
     {
@@ -13,6 +12,8 @@ const natalChart = (date, latitude, longitude, houseSystem = 'P') => {
     },
     houseSystem
   )
+  
+  const aspectsList = aspects(astrosList, housesList.axes)
 
   return {
     astros: {
