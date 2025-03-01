@@ -88,8 +88,9 @@ const position = (astrologyObject, moment) => {
   }
 }
 
-const planets = (date) => {
+const planets = (date, excludeOther = true) => {
   return Object.keys(PLANETS)
+    .filter(name => !excludeOther || planetsByType[name] !== 'other') // 過濾掉 other 類型
     .reduce(
       (accumulator, name) => {
         const planetPosition = position(name, date)
