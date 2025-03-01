@@ -73,18 +73,35 @@ const aspect = (first, second, orbs) => {
 }
 
 const aspects = (planets) => {
-  return Object.keys(planets).reduce((acc, planetKey) => {
-    acc[planetKey] = [];
-    Object.values(planets).forEach((p) => {
-      if (p.name !== planetKey) {
-        const aspectsFounds = aspect(planets[planetKey], p);
-        if (aspectsFounds) {
-          acc[planetKey].push(aspectsFounds);
+  const result = {};
+  const processedPairs = new Set(); // 用來追蹤已處理過的行星對
+  
+  // 初始化每個行星的相位陣列
+  Object.keys(planets).forEach(planetKey => {
+    result[planetKey] = [];
+  });
+  
+  // 計算所有行星對之間的相位
+  Object.keys(planets).forEach(firstKey => {
+    Object.keys(planets).forEach(secondKey => {
+      // 避免與自己比較，並避免重複計算相位
+      if (firstKey !== secondKey && !processedPairs.has(`${firstKey}-${secondKey}`) && !processedPairs.has(`${secondKey}-${firstKey}`)) {
+        // 標記這對行星已處理
+        processedPairs.add(`${firstKey}-${secondKey}`);
+        
+        const aspectFound = aspect(planets[firstKey], planets[secondKey]);
+        if (aspectFound) {
+          // 只將相位添加到第一個行星的列表中
+          result[firstKey].push({
+            ...aspectFound,
+            with: secondKey // 添加與哪個行星形成相位的信息
+          });
         }
       }
     });
-    return acc;
-  }, {});
+  });
+  
+  return result;
 }
 
 module.exports = {
