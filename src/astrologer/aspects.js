@@ -94,28 +94,16 @@ const aspects = (planets, axes) => {
   const result = {};
   const processedPairs = new Set();
   
-  const allBodies = { ...planets };
-  
-  if (axes) {
-    Object.entries(axes).forEach(([axisKey, axisData]) => {
-      allBodies[axisKey] = {
-        name: axisKey,
-        type: 'axis',
-        position: axisData.position
-      };
-    });
-  }
-  
-  Object.keys(allBodies).forEach(bodyKey => {
-    result[bodyKey] = [];
+  Object.keys(planets).forEach(planetKey => {
+    result[planetKey] = [];
   });
   
-  Object.keys(allBodies).forEach(firstKey => {
-    Object.keys(allBodies).forEach(secondKey => {
+  Object.keys(planets).forEach(firstKey => {
+    Object.keys(planets).forEach(secondKey => {
       if (firstKey !== secondKey && !processedPairs.has(`${firstKey}-${secondKey}`) && !processedPairs.has(`${secondKey}-${firstKey}`)) {
         processedPairs.add(`${firstKey}-${secondKey}`);
         
-        const aspectFound = aspect(allBodies[firstKey], allBodies[secondKey]);
+        const aspectFound = aspect(planets[firstKey], planets[secondKey]);
         if (aspectFound) {
           result[firstKey].push({
             ...aspectFound,
@@ -125,6 +113,29 @@ const aspects = (planets, axes) => {
       }
     });
   });
+  
+  if (axes) {
+    const axesWithType = {};
+    Object.entries(axes).forEach(([axisKey, axisData]) => {
+      axesWithType[axisKey] = {
+        name: axisKey,
+        type: 'axis',
+        position: axisData.position
+      };
+    });
+    
+    Object.keys(planets).forEach(planetKey => {
+      Object.keys(axesWithType).forEach(axisKey => {
+        const aspectFound = aspect(planets[planetKey], axesWithType[axisKey]);
+        if (aspectFound) {
+          result[planetKey].push({
+            ...aspectFound,
+            with: axisKey
+          });
+        }
+      });
+    });
+  }
   
   return result;
 }
