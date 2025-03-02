@@ -83,8 +83,60 @@ const addHouseInfoToPlanets = (planets, houses) => {
   return result;
 };
 
+/**
+ * 根據星座獲取宮主星
+ * @param {Number} sign - 星座編號 (1-12)
+ * @returns {String} - 宮主星名稱
+ */
+const getRuler = (sign) => {
+  const rulers = {
+    1: 'mars',        // 白羊座：火星
+    2: 'venus',       // 金牛座：金星
+    3: 'mercury',     // 雙子座：水星
+    4: 'moon',        // 巨蟹座：月亮
+    5: 'sun',         // 獅子座：太陽
+    6: 'mercury',     // 處女座：水星
+    7: 'venus',       // 天秤座：金星
+    8: 'pluto',       // 天蠍座：冥王星（傳統：火星）
+    9: 'jupiter',     // 射手座：木星
+    10: 'saturn',     // 摩羯座：土星
+    11: 'uranus',     // 水瓶座：天王星（傳統：土星）
+    12: 'neptune'     // 雙魚座：海王星（傳統：木星）
+  };
+  
+  return rulers[sign] || null;
+};
+
+/**
+ * 為宮位添加宮主星資訊
+ * @param {Array} houses - 宮位資料陣列
+ * @param {Object} planets - 行星資料對象
+ * @returns {Array} - 添加了宮主星資訊的宮位資料
+ */
+const addRulerInfoToHouses = (houses, planets) => {
+  return houses.map(house => {
+    const ruler = getRuler(house.sign);
+    const rulerPlanet = planets[ruler];
+    
+    if (rulerPlanet) {
+      return {
+        ...house,
+        ruler: {
+          name: ruler,
+          house: rulerPlanet.house,
+          sign: rulerPlanet.sign
+        }
+      };
+    }
+    
+    return house;
+  });
+};
+
 module.exports = {
   getZodiacSign,
   getPlanetHouse,
-  addHouseInfoToPlanets
+  addHouseInfoToPlanets,
+  addRulerInfoToHouses,
+  getRuler
 }; 
