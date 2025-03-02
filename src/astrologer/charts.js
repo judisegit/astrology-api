@@ -1,7 +1,11 @@
 const { houses } = require('./houses')
 const { aspects } = require('./aspects')
 const { planets } = require('./astros')
-const { addHouseInfoToPlanets, addRulerInfoToHouses } = require('./planetHouse')
+const { 
+  addHouseInfoToPlanets, 
+  addRulerInfoToHouses, 
+  calculateSignDistribution 
+} = require('./planetHouse')
 
 const natalChart = (date, latitude, longitude, houseSystem = 'P') => {
   const astrosList = planets(date)
@@ -18,6 +22,8 @@ const natalChart = (date, latitude, longitude, houseSystem = 'P') => {
   
   const housesWithRulers = addRulerInfoToHouses(housesList.houses, astrosWithHouses)
   
+  const distribution = calculateSignDistribution(astrosWithHouses)
+  
   const aspectsList = aspects(astrosWithHouses, housesList.axes)
 
   return {
@@ -26,7 +32,8 @@ const natalChart = (date, latitude, longitude, houseSystem = 'P') => {
     },
     houses: housesWithRulers,
     axes: housesList.axes,
-    aspects: aspectsList
+    aspects: aspectsList,
+    distribution: distribution
   }
 }
 
