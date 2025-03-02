@@ -1,4 +1,103 @@
 /**
+ * 根據星座編號獲取星座模式（開創、固定、變動）
+ * @param {Number} sign - 星座編號 (1-12)
+ * @returns {String} - 星座模式：'cardinal'（開創）, 'fixed'（固定）, 'mutable'（變動）
+ */
+const getSignModality = (sign) => {
+  // 開創星座：白羊(1)、巨蟹(4)、天秤(7)、摩羯(10)
+  if ([1, 4, 7, 10].includes(sign)) {
+    return 'cardinal';
+  }
+  // 固定星座：金牛(2)、獅子(5)、天蠍(8)、水瓶(11)
+  else if ([2, 5, 8, 11].includes(sign)) {
+    return 'fixed';
+  }
+  // 變動星座：雙子(3)、處女(6)、射手(9)、雙魚(12)
+  else {
+    return 'mutable';
+  }
+};
+
+/**
+ * 根據星座編號獲取星座元素（火、土、風、水）
+ * @param {Number} sign - 星座編號 (1-12)
+ * @returns {String} - 星座元素：'fire'（火）, 'earth'（土）, 'air'（風）, 'water'（水）
+ */
+const getSignElement = (sign) => {
+  // 火象星座：白羊(1)、獅子(5)、射手(9)
+  if ([1, 5, 9].includes(sign)) {
+    return 'fire';
+  }
+  // 土象星座：金牛(2)、處女(6)、摩羯(10)
+  else if ([2, 6, 10].includes(sign)) {
+    return 'earth';
+  }
+  // 風象星座：雙子(3)、天秤(7)、水瓶(11)
+  else if ([3, 7, 11].includes(sign)) {
+    return 'air';
+  }
+  // 水象星座：巨蟹(4)、天蠍(8)、雙魚(12)
+  else {
+    return 'water';
+  }
+};
+
+/**
+ * 為行星添加星座模式和元素資訊
+ * @param {Object} planets - 行星資料對象
+ * @returns {Object} - 添加了星座模式和元素資訊的行星資料
+ */
+const addSignPropertiesToPlanets = (planets) => {
+  const result = { ...planets };
+  
+  Object.keys(result).forEach(planetKey => {
+    const planet = result[planetKey];
+    if (planet.sign) {
+      result[planetKey] = {
+        ...planet,
+        signModality: getSignModality(planet.sign),
+        signElement: getSignElement(planet.sign)
+      };
+    }
+  });
+  
+  return result;
+};
+
+/**
+ * 計算星盤中各種星座模式和元素的分佈
+ * @param {Object} planets - 行星資料對象
+ * @returns {Object} - 包含星座模式和元素分佈的統計資料
+ */
+const calculateSignDistribution = (planets) => {
+  const distribution = {
+    modality: {
+      cardinal: 0,
+      fixed: 0,
+      mutable: 0
+    },
+    element: {
+      fire: 0,
+      earth: 0,
+      air: 0,
+      water: 0
+    }
+  };
+  
+  Object.values(planets).forEach(planet => {
+    if (planet.sign) {
+      const modality = getSignModality(planet.sign);
+      const element = getSignElement(planet.sign);
+      
+      distribution.modality[modality]++;
+      distribution.element[element]++;
+    }
+  });
+  
+  return distribution;
+};
+
+/**
  * 根據黃道經度獲取星座編號 (1-12)
  * @param {Number} longitude - 黃道經度
  * @returns {Number} - 星座編號 (1-12)
@@ -38,16 +137,36 @@ const getPlanetHouse = (planet, houses) => {
     
     // 檢查行星是否在當前宮位範圍內
     if (adjustedPlanetLongitude >= currentLongitude && adjustedPlanetLongitude < nextLongitude) {
-      // 檢查宮位是否跨星座
-      const houseStartSign = getZodiacSign(currentLongitude);
-      const houseEndSign = getZodiacSign(nextLongitude % 360); // 確保在 0-359 範圍內
+      // 計算宮位跨越的星座
+      const currentHouseSign = getZodiacSign(currentLongitude);
+      const nextHouseSign = getZodiacSign(nextLongitude);
       
-      const isInterceptedSign = houseStartSign !== houseEndSign;
+      // 檢查宮位是否跨越多個星座
+      let signs = [currentHouseSign];
+      if (currentHouseSign !== nextHouseSign) {
+        // 如果宮位跨越了 0°，需要特殊處理
+        if (nextHouseSign < currentHouseSign && nextHouseSign !== 1) {
+          for (let s = currentHouseSign + 1; s <= 12; s++) {
+            signs.push(s);
+          }
+          for (let s = 1; s < nextHouseSign; s++) {
+            signs.push(s);
+          }
+        } else {
+          for (let s = currentHouseSign + 1; s < nextHouseSign; s++) {
+            signs.push(s);
+          }
+        }
+      }
+      
+      // 檢查行星是否在被截斷的星座中
+      const planetSign = getZodiacSign(planetLongitude);
+      const isInterceptedSign = signs.length > 1 && !signs.includes(planetSign);
       
       return {
         houseNumber: currentHouse.houseNumber,
-        isInterceptedSign: isInterceptedSign,
-        signs: isInterceptedSign ? [houseStartSign, houseEndSign] : [houseStartSign]
+        isInterceptedSign,
+        signs
       };
     }
   }
@@ -80,7 +199,8 @@ const addHouseInfoToPlanets = (planets, houses) => {
     }
   });
   
-  return result;
+  // 添加星座模式和元素資訊
+  return addSignPropertiesToPlanets(result);
 };
 
 /**
@@ -124,7 +244,9 @@ const addRulerInfoToHouses = (houses, planets) => {
         ruler: {
           name: ruler,
           house: rulerPlanet.house,
-          sign: rulerPlanet.sign
+          sign: rulerPlanet.sign,
+          signModality: getSignModality(rulerPlanet.sign),
+          signElement: getSignElement(rulerPlanet.sign)
         }
       };
     }
@@ -138,5 +260,8 @@ module.exports = {
   getPlanetHouse,
   addHouseInfoToPlanets,
   addRulerInfoToHouses,
-  getRuler
+  getRuler,
+  getSignModality,
+  getSignElement,
+  calculateSignDistribution
 }; 
