@@ -1,10 +1,10 @@
 /**
- * 根據黃道經度獲取星座編號 (0-11)
+ * 根據黃道經度獲取星座編號 (1-12)
  * @param {Number} longitude - 黃道經度
- * @returns {Number} - 星座編號 (0-11)
+ * @returns {Number} - 星座編號 (1-12)
  */
 const getZodiacSign = (longitude) => {
-  return Math.floor(longitude / 30) % 12;
+  return (Math.floor(longitude / 30) % 12) + 1;
 };
 
 /**
@@ -21,6 +21,7 @@ const getPlanetHouse = (planet, houses) => {
     const currentHouse = houses[i];
     const nextHouse = houses[(i + 1) % houses.length];
     
+    // 從 houses.js 中獲取的宮位經度
     let currentLongitude = currentHouse.position.longitude;
     let nextLongitude = nextHouse.position.longitude;
     
